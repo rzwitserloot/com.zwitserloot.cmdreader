@@ -1,0 +1,21 @@
+<project name="com.zwitserloot.cmdreader" default="dist">
+	<property name="version" value="1.0" />
+	<target name="-init">
+		<tstamp />
+	</target>
+	
+	<target name="clean" depends="-init">
+		<delete quiet="true" dir="dist" />
+		<delete quiet="true" dir="build" />
+	</target>
+	
+	<target name="build" depends="-init, clean">
+		<mkdir dir="build" />
+		<javac debug="true" target="1.5" destdir="build" srcdir="src" />
+	</target>
+	
+	<target name="dist" depends="-init, build">
+		<mkdir dir="dist" />
+		<jar destfile="dist/com.zwitserloot.cmdreader-${version}.jar" basedir="build" />
+	</target>
+</project>
