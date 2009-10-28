@@ -80,11 +80,11 @@ public class CmdReader<T> {
 		Class<?> c = settingsDescriptor;
 		List<ParseItem> out = new ArrayList<ParseItem>();
 		
-		while ( c != Object.class ) {
+		while (c != Object.class) {
 			Field[] fields = settingsDescriptor.getDeclaredFields();
-			for ( Field field : fields ) {
+			for (Field field : fields) {
 				field.setAccessible(true);
-				if ( Modifier.isStatic(field.getModifiers()) ) continue;
+				if (Modifier.isStatic(field.getModifiers())) continue;
 				out.add(new ParseItem(field));
 			}
 			c = c.getSuperclass();
@@ -96,7 +96,7 @@ public class CmdReader<T> {
 	
 	private static List<ParseItem> makeSeqList(List<ParseItem> items) {
 		List<ParseItem> list = new ArrayList<ParseItem>();
-		for ( ParseItem item : items ) if ( item.isSeq() ) list.add(item);
+		for (ParseItem item : items) if (item.isSeq()) list.add(item);
 		return list;
 	}
 	
@@ -118,13 +118,13 @@ public class CmdReader<T> {
 		int maxFullName = 0;
 		int maxShorthand = 0;
 		
-		for ( ParseItem item : items ) {
-			if ( item.isSeq() ) continue;
+		for (ParseItem item : items) {
+			if (item.isSeq()) continue;
 			maxFullName = Math.max(maxFullName, item.getFullName().length() + (item.isParameterized() ? 4 : 0));
 			maxShorthand = Math.max(maxShorthand, item.getShorthand().length());
 		}
 		
-		if ( maxShorthand > 0 ) maxShorthand++;
+		if (maxShorthand > 0) maxShorthand++;
 		
 		generateShortSummary(commandName, out);
 		generateSequentialArgsHelp(out);
@@ -134,28 +134,29 @@ public class CmdReader<T> {
 	}
 	
 	private void generateShortSummary(String commandName, StringBuilder out) {
-		if ( commandName != null && commandName.length() > 0 ) out.append(commandName).append(" ");
+		if (commandName != null && commandName.length() > 0) out.append(commandName).append(" ");
 		
 		StringBuilder sb = new StringBuilder();
-		for ( ParseItem item : items ) if ( !item.isSeq() && !item.isMandatory() ) sb.append(item.getShorthand());
-		if ( sb.length() > 0 ) {
+		for (ParseItem item : items) if (!item.isSeq() && !item.isMandatory()) sb.append(item.getShorthand());
+		if (sb.length() > 0) {
 			out.append("[-").append(sb).append("] ");
 			sb.setLength(0);
 		}
 		
-		for ( ParseItem item : items ) if ( !item.isSeq() && item.isMandatory() ) sb.append(item.getShorthand());
-		if ( sb.length() > 0 ) {
+		for (ParseItem item : items) if (!item.isSeq() && item.isMandatory()) sb.append(item.getShorthand());
+		if (sb.length() > 0) {
 			out.append("-").append(sb).append(" ");
 			sb.setLength(0);
 		}
 		
-		for ( ParseItem item : items ) if ( !item.isSeq() && item.isMandatory() && item.getShorthand().length() == 0 )
+		for (ParseItem item : items) if (!item.isSeq() && item.isMandatory() && item.getShorthand().length() == 0) {
 			out.append("--").append(item.getFullName()).append("=val ");
+		}
 		
-		for ( ParseItem item : items ) if ( item.isSeq() ) {
-			if ( !item.isMandatory() ) out.append('[');
+		for (ParseItem item : items) if (item.isSeq()) {
+			if (!item.isMandatory()) out.append('[');
 			out.append(item.getFullName());
-			if ( !item.isMandatory() ) out.append(']');
+			if (!item.isMandatory()) out.append(']');
 			out.append(' ');
 		}
 		out.append("\n");
@@ -164,34 +165,34 @@ public class CmdReader<T> {
 	private void generateSequentialArgsHelp(StringBuilder out) {
 		List<ParseItem> items = new ArrayList<ParseItem>();
 		
-		for ( ParseItem item : this.items ) if ( item.isSeq() && item.getFullDescription().length() > 0 ) items.add(item);
-		if ( items.size() == 0 ) return;
+		for (ParseItem item : this.items) if (item.isSeq() && item.getFullDescription().length() > 0) items.add(item);
+		if (items.size() == 0) return;
 		
 		int maxSeqArg = 0;
-		for ( ParseItem item : items ) maxSeqArg = Math.max(maxSeqArg, item.getFullName().length());
+		for (ParseItem item : items) maxSeqArg = Math.max(maxSeqArg, item.getFullName().length());
 		
 		out.append("\n  Sequential arguments:\n");
-		for ( ParseItem item : items ) generateSequentialArgHelp(maxSeqArg, item, out);
+		for (ParseItem item : items) generateSequentialArgHelp(maxSeqArg, item, out);
 	}
 	
 	private void generateMandatoryArgsHelp(int maxFullName, int maxShorthand, StringBuilder out) {
 		List<ParseItem> items = new ArrayList<ParseItem>();
-		for ( ParseItem item : this.items ) if ( item.isMandatory() && !item.isSeq() ) items.add(item);
+		for (ParseItem item : this.items) if (item.isMandatory() && !item.isSeq()) items.add(item);
 		
-		if ( items.size() == 0 ) return;
+		if (items.size() == 0) return;
 		
 		out.append("\n  Mandatory arguments:\n");
-		for ( ParseItem item : items ) generateArgHelp(maxFullName, maxShorthand, item, out);
+		for (ParseItem item : items) generateArgHelp(maxFullName, maxShorthand, item, out);
 	}
 	
 	private void generateOptionalArgsHelp(int maxFullName, int maxShorthand, StringBuilder out) {
 		List<ParseItem> items = new ArrayList<ParseItem>();
-		for ( ParseItem item : this.items ) if ( !item.isMandatory() && !item.isSeq() ) items.add(item);
+		for (ParseItem item : this.items) if (!item.isMandatory() && !item.isSeq()) items.add(item);
 		
-		if ( items.size() == 0 ) return;
+		if (items.size() == 0) return;
 		
 		out.append("\n  Optional arguments:\n");
-		for ( ParseItem item : items ) generateArgHelp(maxFullName, maxShorthand, item, out);
+		for (ParseItem item : items) generateArgHelp(maxFullName, maxShorthand, item, out);
 	}
 	
 	private void generateArgHelp(int maxFullName, int maxShorthand, ParseItem item, StringBuilder out) {
@@ -205,12 +206,12 @@ public class CmdReader<T> {
 		int left = SCREEN_WIDTH - 8 - maxShorthand - maxFullName;
 		
 		String description = item.getFullDescription();
-		if ( description.length() == 0 || description.length() < left ) {
+		if (description.length() == 0 || description.length() < left) {
 			out.append(description).append("\n");
 			return;
 		}
 		
-		for ( String line : wordbreak(item.getFullDescription(), SCREEN_WIDTH -8) ) {
+		for (String line : wordbreak(item.getFullDescription(), SCREEN_WIDTH -8)) {
 			out.append("\n        ").append(line);
 		}
 		out.append("\n");
@@ -223,12 +224,12 @@ public class CmdReader<T> {
 		int left = SCREEN_WIDTH - 7 - maxSeqArg;
 		
 		String description = item.getFullDescription();
-		if ( description.length() == 0 || description.length() < left ) {
+		if (description.length() == 0 || description.length() < left) {
 			out.append(description).append("\n");
 			return;
 		}
 		
-		for ( String line : wordbreak(item.getFullDescription(), SCREEN_WIDTH -8) ) {
+		for (String line : wordbreak(item.getFullDescription(), SCREEN_WIDTH -8)) {
 			out.append("\n        ").append(line);
 		}
 		out.append("\n");
@@ -239,22 +240,22 @@ public class CmdReader<T> {
 		List<String> out = new ArrayList<String>();
 		int lastSpace = -1;
 		
-		for ( char c : text.toCharArray() ) {
-			if ( c == '\t' ) c = ' ';
+		for (char c : text.toCharArray()) {
+			if (c == '\t') c = ' ';
 			
-			if ( c == '\n' ) {
+			if (c == '\n') {
 				out.add(line.toString());
 				line.setLength(0);
 				lastSpace = -1;
 				continue;
 			}
 			
-			if ( c == ' ' ) {
+			if (c == ' ') {
 				lastSpace = line.length();
 				line.append(' ');
 			} else line.append(c);
 			
-			if ( line.length() > width && lastSpace > 8 ) {
+			if (line.length() > width && lastSpace > 8) {
 				out.add(line.substring(0, lastSpace));
 				String left = line.substring(lastSpace+1);
 				line.setLength(0);
@@ -263,7 +264,7 @@ public class CmdReader<T> {
 			}
 		}
 		
-		if ( line.length() > 0 ) out.add(line.toString());
+		if (line.length() > 0) out.add(line.toString());
 		
 		return out;
 	}
@@ -285,27 +286,27 @@ public class CmdReader<T> {
 		boolean inQuote = false;
 		boolean inBack = false;
 		
-		for ( char c : in.toCharArray() ) {
-			if ( inBack ) {
+		for (char c : in.toCharArray()) {
+			if (inBack) {
 				inBack = false;
-				if ( c == '\n' ) continue;
+				if (c == '\n') continue;
 				sb.append(c);
 			}
 			
-			if ( c == '\\' ) {
+			if (c == '\\') {
 				inBack = true;
 				continue;
 			}
 			
-			if ( c == '"' ) {
+			if (c == '"') {
 				inQuote = !inQuote;
 				continue;
 			}
 			
-			if ( c == ' ' && !inQuote ) {
+			if (c == ' ' && !inQuote) {
 				String p = sb.toString();
 				sb.setLength(0);
-				if ( p.equals("") ) continue;
+				if (p.equals("")) continue;
 				out.add(p);
 			}
 		}
@@ -329,7 +330,7 @@ public class CmdReader<T> {
 	public T make(String[] in) throws InvalidCommandLineException {
 		final T obj = construct();
 		
-		if ( in == null ) in = new String[0];
+		if (in == null) in = new String[0];
 		
 		int seq = 0;
 		
@@ -350,15 +351,15 @@ public class CmdReader<T> {
 			}
 			
 			private void checkForGlobalMandatories() throws InvalidCommandLineException {
-				for ( ParseItem item : items ) if ( item.isMandatory() && !used.contains(item) )
+				for (ParseItem item : items) if (item.isMandatory() && !used.contains(item))
 					throw new InvalidCommandLineException(
 						"You did not specify mandatory parameter " + item.getFullName());
 			}
 			
 			private void checkForExcludes() throws InvalidCommandLineException {
-				for ( ParseItem item : items ) if ( used.contains(item) ) {
-					for ( String n : item.getExcludes() ) {
-						for ( ParseItem i : items ) if ( i.getFullName().equals(n) && used.contains(i) )
+				for (ParseItem item : items) if (used.contains(item)) {
+					for (String n : item.getExcludes()) {
+						for (ParseItem i : items) if (i.getFullName().equals(n) && used.contains(i))
 							throw new InvalidCommandLineException(
 									"You specified parameter " + i.getFullName() +
 									" which cannot be used together with " + item.getFullName());
@@ -367,9 +368,9 @@ public class CmdReader<T> {
 			}
 			
 			private void checkForRequires() throws InvalidCommandLineException {
-				for ( ParseItem item : items ) if ( used.contains(item) ) {
-					for ( String n : item.getRequires() ) {
-						for ( ParseItem i : items ) if ( i.getFullName().equals(n) && !used.contains(i) )
+				for (ParseItem item : items) if (used.contains(item)) {
+					for (String n : item.getRequires()) {
+						for (ParseItem i : items) if (i.getFullName().equals(n) && !used.contains(i))
 							throw new InvalidCommandLineException(
 									"You specified parameter " + item.getFullName() +
 									" which requires that you also supply " + i.getFullName());
@@ -378,65 +379,64 @@ public class CmdReader<T> {
 			}
 			
 			private void checkForMandatoriesIf() throws InvalidCommandLineException {
-				for ( ParseItem item : items ) {
-					if ( used.contains(item) || item.getMandatoryIf().size() == 0 ) continue;
-					for ( String n : item.getMandatoryIf() ) {
-						for ( ParseItem i : items ) if ( i.getFullName().equals(n) && used.contains(i) )
+				for (ParseItem item : items) {
+					if (used.contains(item) || item.getMandatoryIf().size() == 0) continue;
+					for (String n : item.getMandatoryIf()) {
+						for (ParseItem i : items) if (i.getFullName().equals(n) && used.contains(i))
 							throw new InvalidCommandLineException(
-								"You did not specify parameter " + item.getFullName() +
-								" which is mandatory if you use " + i.getFullName());
+									"You did not specify parameter " + item.getFullName() +
+									" which is mandatory if you use " + i.getFullName());
 					}
 				}
 			}
 			
 			private void checkForMandatoriesIfNot() throws InvalidCommandLineException {
 				nextItem:
-				for ( ParseItem item : items ) {
-					if ( used.contains(item) || item.getMandatoryIfNot().size() == 0 ) continue;
-					for ( String n : item.getMandatoryIfNot() ) {
-						for ( ParseItem i : items ) if ( i.getFullName().equals(n) && used.contains(i) )
+				for (ParseItem item : items) {
+					if (used.contains(item) || item.getMandatoryIfNot().size() == 0) continue;
+					for (String n : item.getMandatoryIfNot()) {
+						for (ParseItem i : items) if (i.getFullName().equals(n) && used.contains(i))
 							continue nextItem;
 					}
 					
 					StringBuilder alternatives = new StringBuilder();
-					if ( item.getMandatoryIfNot().size() > 1 ) alternatives.append("one of ");
-					for ( String n : item.getMandatoryIfNot() )
-						alternatives.append(n).append(", ");
+					if (item.getMandatoryIfNot().size() > 1) alternatives.append("one of ");
+					for (String n : item.getMandatoryIfNot()) alternatives.append(n).append(", ");
 					alternatives.setLength(alternatives.length() - 2);
 					
 					throw new InvalidCommandLineException(
-						"You did not specify parameter " + item.getFullName() +
-						" which is mandatory unless you use " + alternatives);
+							"You did not specify parameter " + item.getFullName() +
+							" which is mandatory unless you use " + alternatives);
 				}
 			}
 		}
 		
 		State state = new State();
 		
-		for ( int i = 0 ; i < in.length ; i++ ) {
-			if ( in[i].startsWith("--") ) {
+		for (int i = 0; i < in.length; i++) {
+			if (in[i].startsWith("--")) {
 				int idx = in[i].indexOf('=');
 				String key = idx == -1 ? in[i].substring(2) : in[i].substring(2, idx);
 				String value = idx == -1 ? "" : in[i].substring(idx+1);
-				if ( value.length() == 0 && idx != -1 ) throw new InvalidCommandLineException(
+				if (value.length() == 0 && idx != -1) throw new InvalidCommandLineException(
 						"invalid command line argument - you should write something after the '=': " + in[i]);
 				boolean handled = false;
-				for ( ParseItem item : items ) if ( item.getFullName().equalsIgnoreCase(key) ) {
-					if ( item.isParameterized() && value.length() == 0 ) throw new InvalidCommandLineException(String.format(
+				for (ParseItem item : items) if (item.getFullName().equalsIgnoreCase(key)) {
+					if (item.isParameterized() && value.length() == 0) throw new InvalidCommandLineException(String.format(
 							"invalid command line argument - %s requires a parameter but there is none.", key));
 					state.handle(item, idx == -1 ? null : value);
 					handled = true;
 					break;
 				}
-				if ( !handled ) throw new InvalidCommandLineException(
+				if (!handled) throw new InvalidCommandLineException(
 						"invalid command line argument - I don't know about that option: " + in[i]);
-			} else if ( in[i].startsWith("-") ) {
-				for ( char c : in[i].substring(1).toCharArray() ) {
+			} else if (in[i].startsWith("-")) {
+				for (char c : in[i].substring(1).toCharArray()) {
 					ParseItem item = shorthands.get(c);
-					if ( item == null ) throw new InvalidCommandLineException(String.format(
+					if (item == null) throw new InvalidCommandLineException(String.format(
 							"invalid command line argument - %s is not a known option: %s", c, in[i]));
-					if ( item.isParameterized() ) {
-						if ( i == in.length-1 ) throw new InvalidCommandLineException(String.format(
+					if (item.isParameterized()) {
+						if (i == in.length-1) throw new InvalidCommandLineException(String.format(
 								"invalid command line argument - %s requires a parameter but there is none.", c));
 						String value = in[++i];
 						state.handle(item, value);
@@ -444,8 +444,8 @@ public class CmdReader<T> {
 				}
 			} else {
 				seq++;
-				if ( seqList.size() < seq ) {
-					if ( seqList.size() > 0 && seqList.get(seqList.size()-1).isCollection() ) {
+				if (seqList.size() < seq) {
+					if (seqList.size() > 0 && seqList.get(seqList.size()-1).isCollection()) {
 						state.handle(seqList.get(seqList.size()-1), in[i]);
 					} else throw new InvalidCommandLineException(String.format(
 							"invalid command line argument - you've provided too many free-standing arguments: %s", in[i]));
@@ -466,15 +466,15 @@ public class CmdReader<T> {
 			Constructor<T> constructor = settingsDescriptor.getDeclaredConstructor();
 			constructor.setAccessible(true);
 			return constructor.newInstance();
-		} catch ( NoSuchMethodException e ) {
+		} catch (NoSuchMethodException e) {
 			throw new IllegalArgumentException(String.format(
 					"A CmdReader class must have a no-args constructor: %s", settingsDescriptor));
-		} catch ( InstantiationException e ) {
+		} catch (InstantiationException e) {
 			throw new IllegalArgumentException(String.format(
 					"A CmdReader class must not be an interface or abstract: %s", settingsDescriptor));
-		} catch ( IllegalAccessException e ) {
+		} catch (IllegalAccessException e) {
 			throw new IllegalArgumentException("Huh?");
-		} catch ( InvocationTargetException e ) {
+		} catch (InvocationTargetException e) {
 			throw new IllegalArgumentException(
 					"Exception occurred when constructing CmdReader class " + settingsDescriptor, e.getCause());
 		}
@@ -489,9 +489,9 @@ public class CmdReader<T> {
 		Iterator<String> i = collection.iterator();
 		StringBuilder out = new StringBuilder();
 		
-		while ( i.hasNext() ) {
+		while (i.hasNext()) {
 			out.append(i.next());
-			if ( i.hasNext() ) out.append(' ');
+			if (i.hasNext()) out.append(' ');
 		}
 		
 		return out.toString();
