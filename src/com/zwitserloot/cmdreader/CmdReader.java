@@ -422,9 +422,12 @@ public class CmdReader<T> {
 						"invalid command line argument - you should write something after the '=': " + in[i]);
 				boolean handled = false;
 				for (ParseItem item : items) if (item.getFullName().equalsIgnoreCase(key)) {
-					if (item.isParameterized() && value.length() == 0) throw new InvalidCommandLineException(String.format(
-							"invalid command line argument - %s requires a parameter but there is none.", key));
-					state.handle(item, idx == -1 ? null : value);
+					if (item.isParameterized() && value.length() == 0) {
+						if (i < in.length - 1 && !in[i+1].startsWith("-")) value = in[++i];
+						else throw new InvalidCommandLineException(String.format(
+								"invalid command line argument - %s requires a parameter but there is none.", key));
+					}
+					state.handle(item, !item.isParameterized() && value.length() == 0 ? null : value);
 					handled = true;
 					break;
 				}
@@ -436,9 +439,10 @@ public class CmdReader<T> {
 					if (item == null) throw new InvalidCommandLineException(String.format(
 							"invalid command line argument - %s is not a known option: %s", c, in[i]));
 					if (item.isParameterized()) {
-						if (i == in.length-1) throw new InvalidCommandLineException(String.format(
+						String value;
+						if (i < in.length - 1 && !in[i+1].startsWith("-")) value = in[++i];
+						else throw new InvalidCommandLineException(String.format(
 								"invalid command line argument - %s requires a parameter but there is none.", c));
-						String value = in[++i];
 						state.handle(item, value);
 					} else state.handle(item, null);
 				}
