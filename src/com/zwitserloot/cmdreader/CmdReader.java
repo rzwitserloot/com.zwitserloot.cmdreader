@@ -308,8 +308,12 @@ public class CmdReader<T> {
 				sb.setLength(0);
 				if (p.equals("")) continue;
 				out.add(p);
+				continue;
 			}
+			sb.append(c);
 		}
+		
+		if (sb.length() > 0) out.add(sb.toString());
 		
 		return make(out.toArray(new String[out.size()]));
 	}
