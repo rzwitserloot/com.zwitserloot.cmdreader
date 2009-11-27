@@ -57,18 +57,52 @@ public class TestCmdReader {
 		private List<String> val2;
 	}
 	
+	@SuppressWarnings("unused")
+	private static class CmdArgs3 {
+		@Parameterized
+		@Mandatory(onlyIf="val2")
+		private String val1;
+		
+		private boolean val2;
+		
+		@Parameterized
+		@Mandatory(onlyIfNot="val4")
+		private String val3;
+		
+		private boolean val4;
+	}
+	
 	private CmdReader<CmdArgs1> reader1;
 	private CmdReader<CmdArgs2> reader2;
+	private CmdReader<CmdArgs3> reader3;
 	
 	@Before
 	public void init() {
 		reader1 = CmdReader.of(CmdArgs1.class);
 		reader2 = CmdReader.of(CmdArgs2.class);
+		reader3 = CmdReader.of(CmdArgs3.class);
 	}
 	
 	@Test(expected=InvalidCommandLineException.class)
-	public void testMandatory() throws InvalidCommandLineException {
+	public void testMandatory1() throws InvalidCommandLineException {
 		reader1.make(new String[0]);
+	}
+	
+	@Test
+	public void testMandatory2() throws InvalidCommandLineException {
+		reader3.make("--val3 foo");
+		reader3.make("--val1 a --val2 --val3 foo");
+		reader3.make("--val4");
+	}
+	
+	@Test(expected=InvalidCommandLineException.class)
+	public void testMandatory3() throws InvalidCommandLineException {
+		reader3.make("");
+	}
+	
+	@Test(expected=InvalidCommandLineException.class)
+	public void testMandatory4() throws InvalidCommandLineException {
+		reader3.make("--val2");
 	}
 	
 	@Test(expected=InvalidCommandLineException.class)
