@@ -1,5 +1,5 @@
 <project name="com.zwitserloot.cmdreader" default="dist">
-	<property name="version" value="1.0" />
+	<property name="version" value="1.1" />
 	
 	<target name="clean">
 		<delete quiet="true" dir="dist" />
@@ -7,13 +7,46 @@
 	</target>
 	
 	<target name="build">
-		<mkdir dir="build" />
-		<javac debug="true" target="1.5" destdir="build" srcdir="src" />
+		<mkdir dir="build/prog" />
+		<javac debug="true" target="1.5" destdir="build/prog" srcdir="src" />
 	</target>
 	
-	<target name="dist" depends="build">
+	<target name="compileTests" depends="build">
+		<mkdir dir="build/tests" />
+		<javac debug="true" target="1.5" destdir="build/tests" srcdir="test">
+			<classpath>
+				<pathelement path="build/prog" />
+				<fileset dir="deps" includes="*.jar" />
+			</classpath>
+		</javac>
+	</target>
+	
+	<target name="dist" depends="build, -test.quiet, -test">
 		<mkdir dir="dist" />
-		<jar destfile="dist/com.zwitserloot.cmdreader-${version}.jar" basedir="build" />
+		<jar destfile="dist/com.zwitserloot.cmdreader-${version}.jar" basedir="build/prog" />
 		<copy file="dist/com.zwitserloot.cmdreader-${version}.jar" tofile="dist/com.zwitserloot.cmdreader.jar" />
 	</target>
+	
+	<target name="-test.quiet">
+		<property name="tests.quiet" value="true" />
+	</target>
+	
+	<target name="-test" depends="compileTests" unless="skipTests">
+		<junit haltonfailure="yes" fork="on">
+			<formatter type="plain" usefile="false" unless="tests.quiet" />
+			<classpath>
+				<pathelement path="build/prog" />
+				<pathelement path="build/tests" />
+				<fileset dir="deps" includes="*.jar" />
+			</classpath>
+			<batchtest>
+				<fileset dir="test">
+					<include name="**/Test*.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<echo level="info">All tests successful.</echo>
+	</target>
+	
+	<target name="test" depends="-test" description="Runs the unit tests" />
 </project>
