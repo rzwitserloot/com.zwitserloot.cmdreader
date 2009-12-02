@@ -124,7 +124,9 @@ public class CmdReader<T> {
 			maxShorthand = Math.max(maxShorthand, item.getShorthand().length());
 		}
 		
-		if (maxShorthand > 0) maxShorthand++;
+		if (maxShorthand == 0) maxShorthand++;
+		
+		maxShorthand = maxShorthand * 3 -1;
 		
 		generateShortSummary(commandName, out);
 		generateSequentialArgsHelp(out);
@@ -200,7 +202,12 @@ public class CmdReader<T> {
 		String fn = item.getFullName() + (item.isParameterized() ? "=val" : "");
 		out.append(String.format("--%-" + maxFullName + "s ", fn));
 		
-		String sh = item.getShorthand().length() == 0 ? "" : "-" + item.getShorthand();
+		StringBuilder sh = new StringBuilder();
+		for (char c : item.getShorthand().toCharArray()) {
+			if (sh.length() > 0) sh.append(" ");
+			sh.append("-").append(c);
+		}
+		
 		out.append(String.format("%-" + maxShorthand + "s ", sh));
 		
 		int left = SCREEN_WIDTH - 8 - maxShorthand - maxFullName;
