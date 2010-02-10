@@ -35,13 +35,10 @@ public class TestCmdReader {
 		@Excludes("val2")
 		@FullName("foo-bar")
 		@Description("This is a description")
-		@Parameterized
 		private String val1;
 		
-		@Parameterized
 		private String val2;
 		
-		@Parameterized
 		@Shorthand("v")
 		private String val3;
 		
@@ -49,44 +46,35 @@ public class TestCmdReader {
 		private boolean bool;
 		
 		@Requires("foo2")
-		@Parameterized
 		private String foo1;
 		
-		@Parameterized
 		private String foo2;
 		
 		@Mandatory
-		@Parameterized
 		private String foo3;
 	}
 	
 	private static class CmdArgs2 {
 		@Shorthand("a")
-		@Parameterized
 		private int integer;
 		
 		@Shorthand("b")
-		@Parameterized
 		private double real;
 		
 		@Sequential
-		@Parameterized
 		private String val1;
 		
 		@Sequential
-		@Parameterized
 		private List<String> val2;
 	}
 	
 	@SuppressWarnings("unused")
 	private static class CmdArgs3 {
-		@Parameterized
 		@Mandatory(onlyIf="val2")
 		private String val1;
 		
 		private boolean val2;
 		
-		@Parameterized
 		@Mandatory(onlyIfNot="val4")
 		private String val3;
 		
