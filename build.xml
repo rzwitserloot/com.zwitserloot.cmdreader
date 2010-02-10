@@ -39,6 +39,7 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	<target name="clean" description="Deletes build artifacts.">
 		<delete quiet="true" dir="dist" />
 		<delete quiet="true" dir="build" />
+		<delete quiet="true" dir="doc/api" />
 	</target>
 	
 	<target name="distclean" depends="clean" description="Deletes everything this build script has ever generated.">
@@ -49,7 +50,9 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	
 	<target name="compile" depends="ensureDeps" description="Compiles program code">
 		<mkdir dir="build/prog" />
-		<javac debug="true" target="1.5" destdir="build/prog" srcdir="src" />
+		<javac debug="true" target="1.5" destdir="build/prog" srcdir="src">
+			<classpath refid="libs.path" />
+		</javac>
 	</target>
 	
 	<target name="compileTests" depends="compile" description="Compiles test code">
@@ -103,5 +106,19 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	
 	<target name="ensureDeps" depends="config-ivy" description="Download / Update all dependencies.">
 		<ivy:retrieve pattern="lib/[conf]/[artifact].[ext]" />
+	</target>
+	
+	<target name="javadoc" description="Generates the javadoc to doc/api">
+		<delete dir="doc/api" quiet="true" />
+		<mkdir dir="doc/api" />
+		<mkdir dir="build/api" />
+		<property name="javadoc.overview.html" location="build/api/javadoc.overview.html" />
+		<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
+			Welcome to the com.zwitserloot.cmdreader javadoc.
+			The project homepage can be found at <a href="http://github.com/rzwitserloot/com.zwitserloot.cmdreader">http://github.com/rzwitserloot/com.zwitserloot.cmdreader</a>.</body.</html>
+			]]></echo>
+		<javadoc sourcepath="src" defaultexcludes="yes" destdir="doc/api" windowtitle="com.zwitserloot.cmdreader" Overview="${javadoc.overview.html}">
+			<classpath refid="libs.path" />
+		</javadoc>
 	</target>
 </project>
