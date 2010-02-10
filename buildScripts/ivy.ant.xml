@@ -1,0 +1,30 @@
+<project name="install-ivy" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<description>This ant script can install or update Apache Ivy, which is used for com.zwitserloot.cmdreader's dependency management.
+See: http://ant.apache.org/ivy. NB: You don't have to download anything - the usual ant targets (compile, etc) will download ivy if you need it.</description>
+	<property name="ivy.install.version" value="2.1.0" />
+	<property name="ivy.home" location="." />
+	
+	<property name="ivy.jar.dir" value="${ivy.home}/lib" />
+	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+	<property name="ivy.download.url"
+		value="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" />
+	
+	<condition property="ivy.download">
+		<and>
+			<not><isset property="offline" /></not>
+			<not><available file="${ivy.jar.file}" /></not>
+		</and>
+	</condition>
+	
+	<target name="download-ivy" if="ivy.download">
+		<mkdir dir="${ivy.jar.dir}" />
+		<!-- download Ivy from web site so that it can be used even without any special installation -->
+		<get
+			src="${ivy.download.url}" dest="${ivy.jar.file}" usetimestamp="true" />
+	</target>
+	
+	<target name="init-ivy" depends="download-ivy">
+		<available file="lib/ivy.jar" property="ivy.available" />
+		<fail unless="ivy.available" message="Cannot download ivy.jar from ${ivy.download.url} - can't continue the build as you can't download the dependencies without ivy." />
+	</target>
+</project>

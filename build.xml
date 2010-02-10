@@ -1,27 +1,41 @@
-<project name="com.zwitserloot.cmdreader" default="dist">
-	<property name="version" value="1.1" />
+<project name="com.zwitserloot.cmdreader" default="dist" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property name="version" value="1.2" />
 	
-	<target name="clean">
+	<property name="build.compiler" value="javac1.6" />
+	
+	<path id="libs.path">
+		<fileset dir="lib/build">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="clean" description="Deletes build artifacts.">
 		<delete quiet="true" dir="dist" />
 		<delete quiet="true" dir="build" />
 	</target>
 	
-	<target name="build">
+	<target name="distclean" depends="clean" description="Deletes everything this build script has ever generated.">
+		<delete file="lib/ivy.jar" quiet="true" />
+		<delete file="lib/build" quiet="true" />
+		<delete file="lib/runtime" quiet="true" />
+	</target>
+	
+	<target name="compile" depends="ensureDeps" description="Compiles program code">
 		<mkdir dir="build/prog" />
 		<javac debug="true" target="1.5" destdir="build/prog" srcdir="src" />
 	</target>
 	
-	<target name="compileTests" depends="build">
+	<target name="compileTests" depends="compile" description="Compiles test code">
 		<mkdir dir="build/tests" />
 		<javac debug="true" target="1.5" destdir="build/tests" srcdir="test">
+			<classpath refid="libs.path" />
 			<classpath>
 				<pathelement path="build/prog" />
-				<fileset dir="deps" includes="*.jar" />
 			</classpath>
 		</javac>
 	</target>
 	
-	<target name="dist" depends="build, -test.quiet, -test">
+	<target name="dist" depends="compile, -test.quiet, -test" description="Creates the distributable">
 		<mkdir dir="dist" />
 		<jar destfile="dist/com.zwitserloot.cmdreader-${version}.jar" basedir="build/prog" />
 		<copy file="dist/com.zwitserloot.cmdreader-${version}.jar" tofile="dist/com.zwitserloot.cmdreader.jar" />
@@ -34,10 +48,10 @@
 	<target name="-test" depends="compileTests" unless="skipTests">
 		<junit haltonfailure="yes" fork="on">
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
+			<classpath refid="libs.path" />
 			<classpath>
 				<pathelement path="build/prog" />
 				<pathelement path="build/tests" />
-				<fileset dir="deps" includes="*.jar" />
 			</classpath>
 			<batchtest>
 				<fileset dir="test">
@@ -49,4 +63,18 @@
 	</target>
 	
 	<target name="test" depends="-test" description="Runs the unit tests" />
+	
+	<target name="ensure-ivy">
+		<ant antfile="buildScripts/ivy.ant.xml" target="init-ivy" dir="." />
+		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="lib/ivy.jar" />
+	</target>
+	
+	<target name="config-ivy" depends="ensure-ivy">
+		<ivy:configure file="buildScripts/ivysettings.xml" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build" />
+	</target>
+	
+	<target name="ensureDeps" depends="config-ivy" description="Download / Update all dependencies.">
+		<ivy:retrieve pattern="lib/[conf]/[artifact].[ext]" />
+	</target>
 </project>
