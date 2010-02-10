@@ -20,6 +20,12 @@
   THE SOFTWARE.
 -->
 <project name="com.zwitserloot.cmdreader" default="dist" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<description>
+com.zwitserloot.cmdreader is a library to read command line arguments for java.
+To use it, first build a class containing fields, with each field representing a command line option.
+Then, annotate each field to configure settings (such as whether a parameter can show up more than once, is mandatory, etc),
+and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance of your class, with all fields filled in.
+	</description>
 	<property name="version" value="1.2" />
 	
 	<property name="build.compiler" value="javac1.6" />
