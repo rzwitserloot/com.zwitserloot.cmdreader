@@ -111,13 +111,7 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	<target name="javadoc" description="Generates the javadoc to doc/api">
 		<delete dir="doc/api" quiet="true" />
 		<mkdir dir="doc/api" />
-		<mkdir dir="build/api" />
-		<property name="javadoc.overview.html" location="build/api/javadoc.overview.html" />
-		<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
-			Welcome to the com.zwitserloot.cmdreader javadoc.
-			The project homepage can be found at <a href="http://github.com/rzwitserloot/com.zwitserloot.cmdreader">http://github.com/rzwitserloot/com.zwitserloot.cmdreader</a>.</body.</html>
-			]]></echo>
-		<javadoc sourcepath="src" defaultexcludes="yes" destdir="doc/api" windowtitle="com.zwitserloot.cmdreader" Overview="${javadoc.overview.html}">
+		<javadoc sourcepath="src" defaultexcludes="yes" destdir="doc/api" windowtitle="com.zwitserloot.cmdreader">
 			<classpath refid="libs.path" />
 		</javadoc>
 	</target>
