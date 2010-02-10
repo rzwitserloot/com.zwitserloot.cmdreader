@@ -57,19 +57,13 @@ import java.util.Map;
  * <dd>Indicates that the option must be present. You may optionally specify 'onlyIf' and 'onlyIfNot', which are lists of
  *  names (see FullName). onlyIf means: This is mandatory only if at least one of these options is present. onlyIfNot means:
  *  I am not optional only if one of these options is present, otherwise I am optional.
- *  <dt>Parameterized
- *  <dd>I take a parameter. If using the longhard form, the syntax is --fullname=value but for shorthand it's -shorthand value.
- *  If this annotation isn't there, the type of your field must be boolean. Otherwise, it can be any primitive, or String,
- *  or an array or Collection of a primitive or String. In the latter case, the option may appear multiple times. If the string
- *  cannot be coerced to the provided type (via e.g. Integer.parseInt) a command line error is generated with a useful message.
- *  If using a Collection, you must (A) initialize the field yourself, and (B) use generics.
  *  <dt>Sequential
  *  <dd>Use me if there is no option name. In other words, those command line options that do not 'belong' to a -something,
  *  go here. You can have as many as you like, but only the last one can be a List or array. It is an error if a Sequential
  *  annotated field is not also parameterized.
  *  </dl>
  *  
- *  Fields that do not show up aren't modified, so if you want a default, just set the field in the descriptor class.
+ *  Fields that do not show up in the command line arguments aren't modified, so if you want a default, just set the field in the descriptor class.
  */
 public class CmdReader<T> {
 	private final Class<T> settingsDescriptor;

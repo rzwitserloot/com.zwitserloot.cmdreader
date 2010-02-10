@@ -94,7 +94,7 @@ class ParseItem {
 		
 		this.fullName = setupFullName(field);
 		this.isSeq = field.getAnnotation(Sequential.class) != null;
-		this.isParameterized = field.getAnnotation(Parameterized.class) != null;
+		this.isParameterized = field.getType() != boolean.class && field.getType() != Boolean.class;
 		this.shorthand = setupShorthand(field);
 		this.description = setupDescription(field);
 		this.isMandatory = setupMandatory(field);
