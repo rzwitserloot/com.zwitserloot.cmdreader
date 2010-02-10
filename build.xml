@@ -113,6 +113,7 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 		<mkdir dir="doc/api" />
 		<javadoc sourcepath="src" defaultexcludes="yes" destdir="doc/api" windowtitle="com.zwitserloot.cmdreader">
 			<classpath refid="libs.path" />
+			<link href="http://java.sun.com/javase/6/docs/api/" />
 		</javadoc>
 	</target>
 </project>
