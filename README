@@ -1,0 +1,47 @@
+# com.zwitserloot.cmdreader
+
+## How to compile / develop
+
+run:
+
+	ant
+
+and that's that. All dependencies will be downloaded automatically. Once you've run ant, you can also open the project directory as an eclipse project. The jar file you need will be in the `dist` directory.
+
+## How to use
+
+First, create a class to represent your command line options, using the annotations in the `com.zwitserloot.cmdreader` package to configure each command line option. Then, you create a `CmdReader` instance and use it to parse a command line into an instance of your class. You can also a `CmdReader` instance to generate comprehensive command line help.
+
+For the full manual, you should visit the javadoc, which you can build yourself with `ant javadoc`, after which it'll be available in `doc/api/index.html`. For a quick intro, check out the example program at the end of this documentation.
+
+### Example program
+
+	import com.zwitserloot.cmdreader.*;
+	
+	public class Test {
+		class CmdArgs {
+			@Shorthand("x")
+			@Description("Excludes the given file.")
+			java.util.List<String> exclude;
+			
+			@Sequential
+			@Mandatory
+			@Description("The directory to turn into a compressed archive.")
+			String compress;
+		}
+		
+		public static void main(String[] rawArgs) {
+			CmdReader<CmdArgs> reader = CmdReader.of(CmdArgs.class);
+			CmdArgs args;
+			try {
+				args = reader.make(rawArgs);
+			} catch (InvalidCommandLineException e) {
+				System.err.println(e.getMessage());
+				System.err.println(reader.generateCommandLineHelp("java Test"));
+				return;
+			}
+			
+			System.err.println("If this was a real program, I would now compress " + args.compress);
+			System.err.println("And I'd be excluding: " + args.exclude);
+		}
+	}
