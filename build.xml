@@ -65,10 +65,21 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 		</javac>
 	</target>
 	
-	<target name="dist" depends="compile, -test.quiet, -test" description="Creates the distributable">
+	<target name="dist" depends="compile, -test.quiet, -test, javadoc" description="Creates the distributable">
 		<mkdir dir="dist" />
 		<jar destfile="dist/com.zwitserloot.cmdreader-${version}.jar" basedir="build/prog" />
 		<copy file="dist/com.zwitserloot.cmdreader-${version}.jar" tofile="dist/com.zwitserloot.cmdreader.jar" />
+		<zip destfile="dist/com.zwitserloot.cmdreader-javadoc-${version}.zip" basedir="doc/api" />
+		<zip destfile="dist/com.zwitserloot.cmdreader-src-${version}.zip">
+			<zipfileset dir="." prefix="com.zwitserloot.cmdreader/">
+				<include name="LICENCE" />
+				<include name="README" />
+				<include name="src/**" />
+				<include name="build.xml" />
+				<include name="buildScripts/**" />
+				<include name="test/**" />
+			</zipfileset>
+		</zip>
 	</target>
 	
 	<target name="-test.quiet">
