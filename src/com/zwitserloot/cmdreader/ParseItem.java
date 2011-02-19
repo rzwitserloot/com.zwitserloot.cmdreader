@@ -56,6 +56,7 @@ class ParseItem {
 	private final String shorthand;
 	private final String description;
 	private final List<String> excludes;
+	private final List<String> excludesGroup;
 	private final List<String> mandatoryIf;
 	private final List<String> mandatoryIfNot;
 	private final List<String> requires;
@@ -102,6 +103,7 @@ class ParseItem {
 		this.mandatoryIfNot = setupMandatoryIfNot(field);
 		this.requires = setupRequires(field);
 		this.excludes = setupExcludes(field);
+		this.excludesGroup = setupExcludesGroup(field);
 		
 		try {
 			sanityChecks();
@@ -190,6 +192,10 @@ class ParseItem {
 		return excludes;
 	}
 	
+	List<String> getExcludesGroup() {
+		return excludesGroup;
+	}
+	
 	boolean isParameterized() {
 		return isParameterized;
 	}
@@ -230,7 +236,7 @@ class ParseItem {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	private Object stringToObject(String raw) {
 		if (String.class == type) return raw;
 		if (Integer.class == type) return Integer.parseInt(raw);
@@ -331,6 +337,12 @@ class ParseItem {
 		Excludes excludes = field.getAnnotation(Excludes.class);
 		if (excludes == null || excludes.value().length == 0) return Collections.emptyList();
 		return Collections.unmodifiableList(Arrays.asList(excludes.value()));
+	}
+	
+	private List<String> setupExcludesGroup(Field field) {
+		ExcludesGroup excludesGroup = field.getAnnotation(ExcludesGroup.class);
+		if (excludesGroup == null || excludesGroup.value().length == 0) return Collections.emptyList();
+		return Collections.unmodifiableList(Arrays.asList(excludesGroup.value()));
 	}
 	
 	private List<String> TRUE_VALS = Collections.unmodifiableList(Arrays.asList("1", "true", "t", "y", "yes", "on"));

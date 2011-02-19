@@ -53,6 +53,9 @@ import java.util.Map;
  * <dt>Excludes
  * <dd>A list of names (see FullName) that cannot co-exist together with this option. If this option is present
  *  as well as one of the excluded ones, an error will be generated.
+ * <dt>ExcludesGroup
+ * <dd>A list of keywords. An error is generated if two or more options that share an <code>@ExcludesGroup</code> keyword are present.
+ * This feature is useful for selecting various mutually exclusive modes of operation, such as 'pack, unpack, test' for a compression tool.
  * <dt>Mandatory
  * <dd>Indicates that the option must be present. You may optionally specify 'onlyIf' and 'onlyIfNot', which are lists of
  *  names (see FullName). onlyIf means: This is mandatory only if at least one of these options is present. onlyIfNot means:
@@ -371,6 +374,7 @@ public class CmdReader<T> {
 			void finish() throws InvalidCommandLineException {
 				checkForGlobalMandatories();
 				checkForExcludes();
+				checkForGroupExcludes();
 				checkForRequires();
 				checkForMandatoriesIf();
 				checkForMandatoriesIfNot();
@@ -389,6 +393,21 @@ public class CmdReader<T> {
 							throw new InvalidCommandLineException(
 									"You specified parameter " + i.getFullName() +
 									" which cannot be used together with " + item.getFullName());
+					}
+				}
+			}
+			
+			private void checkForGroupExcludes() throws InvalidCommandLineException {
+				for (ParseItem item : items) if (used.contains(item)) {
+					for (String n : item.getExcludesGroup()) {
+						for (ParseItem i : items) {
+							if (i == item || !used.contains(i)) continue;
+							if (i.getExcludesGroup().contains(n)) {
+								throw new InvalidCommandLineException(
+										"You specified parameter " + i.getFullName() +
+										" which cannot be used together with " + item.getFullName());
+							}
+						}
 					}
 				}
 			}

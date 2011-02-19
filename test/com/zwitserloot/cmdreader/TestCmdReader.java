@@ -81,15 +81,35 @@ public class TestCmdReader {
 		private boolean val4;
 	}
 	
+	@SuppressWarnings("unused")
+	private static class CmdArgs4 {
+		@ExcludesGroup
+		private boolean bar1;
+		
+		@ExcludesGroup
+		private boolean bar2;
+		
+		@ExcludesGroup({"default", "foobar"})
+		private boolean bar3;
+		
+		@ExcludesGroup("foobar")
+		private boolean bar4;
+		
+		@ExcludesGroup("foobar")
+		private boolean bar5;
+	}
+	
 	private CmdReader<CmdArgs1> reader1;
 	private CmdReader<CmdArgs2> reader2;
 	private CmdReader<CmdArgs3> reader3;
+	private CmdReader<CmdArgs4> reader4;
 	
 	@Before
 	public void init() {
 		reader1 = CmdReader.of(CmdArgs1.class);
 		reader2 = CmdReader.of(CmdArgs2.class);
 		reader3 = CmdReader.of(CmdArgs3.class);
+		reader4 = CmdReader.of(CmdArgs4.class);
 	}
 	
 	@Test(expected=InvalidCommandLineException.class)
@@ -146,6 +166,26 @@ public class TestCmdReader {
 	@Test(expected=InvalidCommandLineException.class)
 	public void testExcludes2() throws InvalidCommandLineException {
 		reader1.make("--foo-bar test1 -b --val2 bla --foo3=bar");
+	}
+	
+	@Test(expected=InvalidCommandLineException.class)
+	public void testExcludesGroup1() throws InvalidCommandLineException {
+		reader4.make("--bar1 --bar3");
+	}
+	
+	@Test
+	public void testExcludesGroup2() throws InvalidCommandLineException {
+		reader4.make("--bar1 --bar4");
+	}
+	
+	@Test(expected=InvalidCommandLineException.class)
+	public void testExcludesGroup3() throws InvalidCommandLineException {
+		reader4.make("--bar3 --bar4 --bar5");
+	}
+	
+	@Test(expected=InvalidCommandLineException.class)
+	public void testExcludesGroup4() throws InvalidCommandLineException {
+		reader4.make("--bar3 --bar5");
 	}
 	
 	@Test(expected=InvalidCommandLineException.class)
