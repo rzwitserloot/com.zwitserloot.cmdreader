@@ -1,10 +1,11 @@
 <ivy-module version="2.0">
 	<info organisation="com.zwitserloot" module="cmdreader" />
 	<configurations>
-		<conf name="build" extends="runtime" />
+		<conf name="build" />
 		<conf name="runtime" />
+		<conf name="test" extends="build, runtime" />
 	</configurations>
 	<dependencies>
-		<dependency org="junit.org" name="junit" rev="4.8.1" conf="build->default" />
+		<dependency org="junit.org" name="junit" rev="4.8.1" conf="test->default" />
 	</dependencies>
 </ivy-module>

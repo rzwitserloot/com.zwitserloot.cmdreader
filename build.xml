@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-<project name="com.zwitserloot.cmdreader" default="dist" xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="com.zwitserloot.cmdreader" default="dist" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus">
 	<description>
 com.zwitserloot.cmdreader is a library to read command line arguments for java.
 To use it, first build a class containing fields, with each field representing a command line option.
@@ -29,12 +29,62 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	<property name="version" value="1.2" />
 	
 	<property name="build.compiler" value="javac1.6" />
+	<property name="ivy.retrieve.pattern" value="lib/[conf]/[artifact].[ext]" />
+	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
 	
-	<path id="libs.path">
+	<path id="build.path">
 		<fileset dir="lib/build">
 			<include name="*.jar" />
 		</fileset>
 	</path>
+	
+	<path id="test.path">
+		<fileset dir="lib/test">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="download-ipp" unless="ivyplusplus.available">
+		<mkdir dir="lib" />
+		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" usetimestamp="true" />
+	</target>
+	
+	<target name="load-ipp" depends="download-ipp">
+		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
+		<ivy:ensureippversion version="1.4" property="ipp.versionOkay" />
+	</target>
+	
+	<target name="checkver-ipp" depends="load-ipp" unless="ipp.versionOkay">
+		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" />
+		<fail>ivyplusplus had to be redownloaded. Restart the script to continue.</fail>
+	</target>
+	
+	<target name="ensure-ipp" depends="load-ipp, checkver-ipp" />
+	
+	<target name="config-ivy" depends="ensure-ipp" unless="ivy.config">
+		<ivy:configure file="buildScripts/ivysettings.xml" />
+		<property name="ivy.config" value="true" />
+	</target>
+	
+	<target name="deps" depends="ensureBuildDeps, ensureRuntimeDeps, ensureTestDeps" description="Downloads all dependencies." />
+	
+	<target name="ensureBuildDeps" depends="config-ivy">
+		<mkdir dir="lib/build" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build" />
+		<ivy:retrieve />
+	</target>
+	
+	<target name="ensureRuntimeDeps" depends="config-ivy">
+		<mkdir dir="lib/runtime" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="runtime" />
+		<ivy:retrieve />
+	</target>
+	
+	<target name="ensureTestDeps" depends="config-ivy">
+		<mkdir dir="lib/test" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="test" />
+		<ivy:retrieve />
+	</target>
 	
 	<target name="clean" description="Deletes build artifacts.">
 		<delete quiet="true" dir="dist" />
@@ -43,26 +93,31 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	</target>
 	
 	<target name="distclean" depends="clean" description="Deletes everything this build script has ever generated.">
-		<delete file="lib/ivy.jar" quiet="true" />
-		<delete file="lib/build" quiet="true" />
-		<delete file="lib/runtime" quiet="true" />
+		<delete dir="lib" quiet="true" />
+		<delete dir="dist" quiet="true" />
+		<delete file=".project" quiet="true" />
+		<delete file=".classpath" quiet="true" />
+		<delete dir=".settings" quiet="true" />
+		<delete dir=".idea" quiet="true" />
+		<delete file="cmdreader.iml" quiet="true" />
 	</target>
 	
-	<target name="compile" depends="ensureDeps" description="Compiles program code">
+	<target name="compile" depends="ensureBuildDeps" description="Compiles program code">
 		<mkdir dir="build/prog" />
-		<javac debug="true" target="1.5" destdir="build/prog" srcdir="src">
-			<classpath refid="libs.path" />
-		</javac>
+		<ivy:compile destdir="build/prog" target="1.5" source="1.5">
+			<src path="src" />
+			<classpath refid="build.path" />
+		</ivy:compile>
 	</target>
 	
-	<target name="compileTests" depends="compile" description="Compiles test code">
-		<mkdir dir="build/tests" />
-		<javac debug="true" target="1.5" destdir="build/tests" srcdir="test">
-			<classpath refid="libs.path" />
+	<target name="compileTests" depends="compile, ensureTestDeps" description="Compiles test code">
+		<ivy:compile destdir="build/tests" source="1.5" target="1.5">
+			<src path="test" />
+			<classpath refid="test.path" />
 			<classpath>
 				<pathelement path="build/prog" />
 			</classpath>
-		</javac>
+		</ivy:compile>
 	</target>
 	
 	<target name="dist" depends="compile, -test.quiet, -test, javadoc" description="Creates the distributable">
@@ -72,7 +127,7 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 		<zip destfile="dist/com.zwitserloot.cmdreader-javadoc-${version}.zip" basedir="doc/api" />
 		<zip destfile="dist/com.zwitserloot.cmdreader-src-${version}.zip">
 			<zipfileset dir="." prefix="com.zwitserloot.cmdreader/">
-				<include name="LICENCE" />
+				<include name="LICENSE" />
 				<include name="README" />
 				<include name="src/**" />
 				<include name="build.xml" />
@@ -89,7 +144,7 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	<target name="-test" depends="compileTests" unless="skipTests">
 		<junit haltonfailure="yes" fork="on">
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
-			<classpath refid="libs.path" />
+			<classpath refid="test.path" />
 			<classpath>
 				<pathelement path="build/prog" />
 				<pathelement path="build/tests" />
@@ -105,26 +160,38 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	
 	<target name="test" depends="-test" description="Runs the unit tests" />
 	
-	<target name="ensure-ivy">
-		<ant antfile="buildScripts/ivy.ant.xml" target="init-ivy" dir="." />
-		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="lib/ivy.jar" />
-	</target>
-	
-	<target name="config-ivy" depends="ensure-ivy">
-		<ivy:configure file="buildScripts/ivysettings.xml" />
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build" />
-	</target>
-	
-	<target name="ensureDeps" depends="config-ivy" description="Download / Update all dependencies.">
-		<ivy:retrieve pattern="lib/[conf]/[artifact].[ext]" />
-	</target>
-	
 	<target name="javadoc" description="Generates the javadoc to doc/api">
 		<delete dir="doc/api" quiet="true" />
 		<mkdir dir="doc/api" />
 		<javadoc sourcepath="src" defaultexcludes="yes" destdir="doc/api" windowtitle="com.zwitserloot.cmdreader">
-			<classpath refid="libs.path" />
+			<classpath refid="build.path" />
 			<link href="http://java.sun.com/javase/6/docs/api/" />
 		</javadoc>
+	</target>
+	
+	<target name="intellij" depends="deps" description="Creates intellij project files and downloads all dependencies. Open this directory as a project in IntelliJ after running this target.">
+		<ivy:intellijgen>
+			<conf name="build" />
+			<conf name="test" />
+			<module name="cmdreader" depends="build, test">
+				<srcdir dir="src" />
+				<srcdir dir="test" test="true" />
+			</module>
+			<settings>
+				<url url="http://projectlombok.org/downloads/lombok.intellij.settings" />
+			</settings>
+		</ivy:intellijgen>
+	</target>
+	
+	<target name="eclipse" depends="deps" description="Creates eclipse project files and downloads all dependencies. Open this directory as project in eclipse after running this target.">
+		<ivy:eclipsegen>
+			<srcdir dir="src" />
+			<srcdir dir="test" />
+			<conf name="build" />
+			<conf name="test" />
+			<settings>
+				<url url="http://projectlombok.org/downloads/lombok.eclipse.settings" />
+			</settings>
+		</ivy:eclipsegen>
 	</target>
 </project>

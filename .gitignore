@@ -2,3 +2,8 @@ bin
 dist
 build
 doc/api
+lib
+ivyCache
+.settings
+.classpath
+.project
