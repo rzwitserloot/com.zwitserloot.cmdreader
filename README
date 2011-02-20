@@ -6,7 +6,7 @@ run:
 
 	ant
 
-and that's that. All dependencies will be downloaded automatically. Once you've run ant, you can also open the project directory as an eclipse project. The jar file you need will be in the `dist` directory.
+and that's that. All dependencies will be downloaded automatically. The jar file you need will be in the `dist` directory. If you want to work on the code, run 'ant eclipse' or 'ant intellij' to set up the project dir as an eclipse or intellij project.
 
 ## How to use
 
