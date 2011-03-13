@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot.
+ * Copyright © 2010-2011 Reinier Zwitserloot.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * A human readable description of the field. Used to auto-generate command line help.
+ */
 @Retention(value=RetentionPolicy.RUNTIME)
 @Target(value=ElementType.FIELD)
 @Documented

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot.
+ * Copyright © 2010-2011 Reinier Zwitserloot.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Indicates that the presence of this option also means 1 or more other options must also be present.
+ * option names.
+ */
 @Retention(value=RetentionPolicy.RUNTIME)
 @Target(value=ElementType.FIELD)
 @Documented
 public @interface Requires {
+	/** The other option or options that must be present. */
 	String[] value();
 }

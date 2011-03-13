@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot.
+ * Copyright © 2010-2011 Reinier Zwitserloot.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * A list of names (either the {@code @FullName}, or if not present, the field name of another option) that cannot co-exist together with this option.
+ * If this option is present as well as one of the excluded ones, a {@link InvalidCommandLineException} will be thrown.
+ */
 @Retention(value=RetentionPolicy.RUNTIME)
 @Target(value=ElementType.FIELD)
 @Documented

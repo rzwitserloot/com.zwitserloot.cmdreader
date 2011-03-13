@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot.
+ * Copyright © 2010-2011 Reinier Zwitserloot.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,12 @@
  */
 package com.zwitserloot.cmdreader;
 
+/**
+ * This exception is thrown if the command line is not valid, for example because it contains unrecognized options,
+ * or one of the constraints (such as one created with {@code @Excludes}) is broken.
+ * 
+ * The {@link #getMessage()} method will contain an english, human readable explanation of what's wrong with the command line.
+ */
 public class InvalidCommandLineException extends Exception {
 	private static final long serialVersionUID = 20080509L;
 	

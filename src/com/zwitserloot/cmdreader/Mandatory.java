@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot.
+ * Copyright © 2010-2011 Reinier Zwitserloot.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Indicates that the option must be present. You may optionally specify {@code onlyIf} or {@code onlyIfNot}, which are lists of
+ * option names.
+ */
 @Retention(value=RetentionPolicy.RUNTIME)
 @Target(value=ElementType.FIELD)
 @Documented
 public @interface Mandatory {
+	/** If present, this option is mandatory only if at least one of these options are also present. */
 	String[] onlyIf() default {};
+	
+	/** If present, this option is mandatory if all options listed here are <em>not</em> present. */
 	String[] onlyIfNot() default {};
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot.
+ * Copyright © 2010-2011 Reinier Zwitserloot.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,8 +62,8 @@ import java.util.Map;
  *  I am not optional only if one of these options is present, otherwise I am optional.
  *  <dt>Sequential
  *  <dd>Use me if there is no option name. In other words, those command line options that do not 'belong' to a -something,
- *  go here. You can have as many as you like, but only the last one can be a List or array. It is an error if a Sequential
- *  annotated field is not also parameterized.
+ *  go here. You can have as many as you like, but only one can be a List or array. It is an error if a Sequential
+ *  annotated field is of type boolean. If you have multiple {@code @Sequential} options, you need to specify the ordering.
  *  </dl>
  *  
  *  Fields that do not show up in the command line arguments aren't modified, so if you want a default, just set the field in the descriptor class.

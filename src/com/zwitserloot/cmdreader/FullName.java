@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot.
+ * Copyright © 2010-2011 Reinier Zwitserloot.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * The name of the option (optional - defaults to field name).
+ * Used in the Excludes and Mandatory annotations, and also allowed on the command line itself as {@code --fullname(=value)}
+ */
 @Retention(value=RetentionPolicy.RUNTIME)
 @Target(value=ElementType.FIELD)
 @Documented

@@ -27,6 +27,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * A list of one or more keywords. An {@link InvalidCommandLineException} is thrown if two or more options that share an {@code @ExcludesGroup} keyword are present.
+ * 
+ * This feature is useful for selecting various mutually exclusive modes of operation, such as 'pack, unpack, test' for a compression tool.
+ */
 @Retention(value=RetentionPolicy.RUNTIME)
 @Target(value=ElementType.FIELD)
 @Documented

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot.
+ * Copyright © 2010-2011 Reinier Zwitserloot.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Allows a shorthand form, i.e. {@code -h} to be used instead of the full name, i.e. {@code --help}.
+ * You can have multiple shorthands for one command. These are usually single characters. Single character shorthands can be chained:
+ * <pre>
+ *     java -jar yourapp.jar -abc
+ * </pre>
+ * 
+ * is the same as:
+ * <pre>
+ *     java -jar yourapp.jar -a -b -c
+ * </pre>
+ * 
+ * assuming {@code a}, {@code b}, and {@code c} are all shorthands.
+ */
 @Retention(value=RetentionPolicy.RUNTIME)
 @Target(value=ElementType.FIELD)
 @Documented

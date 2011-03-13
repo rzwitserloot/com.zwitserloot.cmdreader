@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot.
+ * Copyright © 2010-2011 Reinier Zwitserloot.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * All options that are marked with {@code @Sequential} do not need an option name. Only one may be an array or list, and these options may not be of type {@code boolean}.
+ * For example:
+ * 
+ * <pre>
+ *     &#64;Sequential(1) String from;
+ *     &#64;Sequential(2) String to;
+ * </pre>
+ * 
+ * could be part of the command line arguments structure for a copy command.
+ */
 @Retention(value=RetentionPolicy.RUNTIME)
 @Target(value=ElementType.FIELD)
 @Documented
 public @interface Sequential {
-
+	/** Because fields in classes do not have a defined order, if you have multiple arguments marked {@code @Sequential} you need to specify the order. */
+	int value() default 0;
 }
