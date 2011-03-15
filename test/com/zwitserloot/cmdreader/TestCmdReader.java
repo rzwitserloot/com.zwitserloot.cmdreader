@@ -22,6 +22,7 @@
 package com.zwitserloot.cmdreader;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -61,10 +62,10 @@ public class TestCmdReader {
 		@Shorthand("b")
 		private double real;
 		
-		@Sequential
+		@Sequential(1)
 		private String val1;
 		
-		@Sequential
+		@Sequential(2)
 		private List<String> val2;
 	}
 	
@@ -99,10 +100,63 @@ public class TestCmdReader {
 		private boolean bar5;
 	}
 	
+	@SuppressWarnings("all")
+	private static class CmdArgsSeqFail1 {
+		@Sequential(1)
+		String foo;
+		
+		@Mandatory
+		@Sequential(2)
+		String bar;
+	}
+	
+	@SuppressWarnings("all")
+	private static class CmdArgsSeqFail2 {
+		@Mandatory
+		@Sequential(1)
+		List<String> col;
+		
+		@Mandatory
+		@Sequential(2)
+		String bar;
+		
+		@Sequential(3)
+		String baz;
+	}
+	
+	private static class CmdArgsSeq1 {
+		@Mandatory
+		@Sequential(1)
+		String arg1;
+		
+		@Sequential(2)
+		List<String> list;
+		
+		@Mandatory
+		@Sequential(3)
+		String arg2;
+		
+		@Mandatory
+		@Sequential(4)
+		String arg3;
+	}
+	
+	private static class CmdArgsSeq2 {
+		@Mandatory
+		@Sequential(1)
+		String arg1;
+		
+		@Mandatory
+		@Sequential(2)
+		List<String> list;
+	}
+	
 	private CmdReader<CmdArgs1> reader1;
 	private CmdReader<CmdArgs2> reader2;
 	private CmdReader<CmdArgs3> reader3;
 	private CmdReader<CmdArgs4> reader4;
+	private CmdReader<CmdArgsSeq1> readerSeq1;
+	private CmdReader<CmdArgsSeq2> readerSeq2;
 	
 	@Before
 	public void init() {
@@ -110,6 +164,8 @@ public class TestCmdReader {
 		reader2 = CmdReader.of(CmdArgs2.class);
 		reader3 = CmdReader.of(CmdArgs3.class);
 		reader4 = CmdReader.of(CmdArgs4.class);
+		readerSeq1 = CmdReader.of(CmdArgsSeq1.class);
+		readerSeq2 = CmdReader.of(CmdArgsSeq2.class);
 	}
 	
 	@Test(expected=InvalidCommandLineException.class)
@@ -241,5 +297,38 @@ public class TestCmdReader {
 		assertEquals(0, args.integer);
 		assertNull(args.val1);
 		assertEquals(Arrays.asList("test1", "test2"), args.val2);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testSeqFail1() throws IllegalArgumentException {
+		CmdReader.of(CmdArgsSeqFail1.class);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testSeqFail2() throws IllegalArgumentException {
+		CmdReader.of(CmdArgsSeqFail2.class);
+	}
+	
+	public void testSequential5() throws InvalidCommandLineException {
+		CmdArgsSeq1 args = readerSeq1.make("foo1 foo2 foo3 foo4 foo5 foo6 foo7");
+		assertEquals("foo1", args.arg1);
+		assertEquals(Arrays.asList("foo2", "foo3", "foo4", "foo5"), args.list);
+		assertEquals("foo6", args.arg2);
+		assertEquals("foo7", args.arg3);
+		
+		args = readerSeq1.make("foo1 foo2 foo3");
+		assertEquals("foo1", args.arg1);
+		assertEquals(Collections.emptyList(), args.list);
+		assertEquals("foo2", args.arg2);
+		assertEquals("foo3", args.arg3);
+		
+		CmdArgsSeq2 args2 = readerSeq2.make("foo1 foo2 foo3 foo4 foo5 foo6 foo7");
+		assertEquals("foo1", args2.arg1);
+		assertEquals(Arrays.asList("foo2", "foo3", "foo4", "foo5", "foo6", "foo7"), args2.list);
+	}
+	
+	@Test(expected=InvalidCommandLineException.class)
+	public void testSequential6() throws InvalidCommandLineException {
+		readerSeq2.make("foo1");
 	}
 }

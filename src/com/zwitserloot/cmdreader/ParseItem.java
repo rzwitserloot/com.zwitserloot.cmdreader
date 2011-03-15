@@ -51,6 +51,7 @@ class ParseItem {
 	private final Class<?> type;
 	private final String fullName;
 	private final boolean isSeq;
+	private final int seqOrder;
 	private final boolean isParameterized;
 	private final boolean isMandatory;
 	private final String shorthand;
@@ -94,7 +95,9 @@ class ParseItem {
 		if (!LEGAL_CLASSES.contains(type)) throw new IllegalArgumentException("Not a valid class for command line parsing: " + field.getGenericType());
 		
 		this.fullName = setupFullName(field);
-		this.isSeq = field.getAnnotation(Sequential.class) != null;
+		Sequential seq = field.getAnnotation(Sequential.class);
+		this.isSeq = seq != null;
+		this.seqOrder = seq == null ? 0 : seq.value();
 		this.isParameterized = field.getType() != boolean.class && field.getType() != Boolean.class;
 		this.shorthand = setupShorthand(field);
 		this.description = setupDescription(field);
@@ -130,25 +133,51 @@ class ParseItem {
 						items.get(i).field.getName(), items.get(j).field.getName()));
 		}
 		
-		// An isCollection, isSeq must be the last isSeq in the set.
+		// Only one isSeq may be a collection.
 		ParseItem isCollectionIsSeq = null;
 		for (ParseItem item : items) {
-			if (item.isSeq && isCollectionIsSeq != null) throw new IllegalArgumentException(String.format(
-					"After the sequential, collection item %s no more sequential items allowed (at %s)",
-					isCollectionIsSeq.fullName, item.fullName));
-			if (item.isSeq && item.isCollection) isCollectionIsSeq = item;
+			if (!item.isSeq) continue;
+			if (item.isSeq && item.isCollection) {
+				if (isCollectionIsSeq != null) throw new IllegalArgumentException(String.format(
+						"More than one @Sequential item is a collection (only one is allowed): %s %s",
+						isCollectionIsSeq.getFullName(), item.getFullName()));
+				isCollectionIsSeq = item;
+			}
 		}
 		
-		// If the Xth isSeq is mandatory, every isSeq below X must also be mandatory.
+		// No two sequential items share the same order number.
+		for (int i = 0; i < items.size(); i++) {
+			for (int j = i + 1; j < items.size(); j++) {
+				if (!items.get(i).isSeq() || !items.get(j).isSeq()) continue;
+				if (items.get(i).getSeqOrder() == items.get(j).getSeqOrder()) throw new IllegalArgumentException(String.format(
+						"Two @Sequential items have the same value; use @Sequential(10) to specify the ordering: %s %s",
+						items.get(i).getFullName(), items.get(j).getFullName()));
+			}
+		}
+	}
+	
+	static void multiSeqSanityChecks(List<ParseItem> seqItems) {
+		// If the Xth isSeq is mandatory, every isSeq below X must also be mandatory, unless that isSeq is a collection.
 		ParseItem firstNonMandatoryIsSeq = null;
-		for (ParseItem item : items) {
-			if (!item.isSeq) continue;
-			if (firstNonMandatoryIsSeq == null && !item.isMandatory) firstNonMandatoryIsSeq = item;
-			if (item.isMandatory && firstNonMandatoryIsSeq != null) throw new IllegalArgumentException(String.format(
+		for (ParseItem item : seqItems) {
+			if (firstNonMandatoryIsSeq == null && !item.isMandatory() && !item.isCollection()) firstNonMandatoryIsSeq = item;
+			if (item.isMandatory() && firstNonMandatoryIsSeq != null) throw new IllegalArgumentException(String.format(
 					"Sequential item %s is non-mandatory, so %s which is a later sequential item must also be non-mandatory",
 					firstNonMandatoryIsSeq.fullName, item.fullName));
 		}
 		
+		// If there is a collection sequential entry, then all sequential entries after it must be mandatory, or
+		// its not possible to tell the difference between supplying more to the collection or supplying an optional later sequential.
+		ParseItem collectionSeq = null;
+		for (ParseItem item : seqItems) {
+			if (collectionSeq == null) {
+				if (item.isCollection()) collectionSeq = item;
+			} else {
+				if (!item.isMandatory()) throw new IllegalArgumentException(String.format(
+						"Sequential item %s is non-mandatory, but earlier sequential item %s is a collection; this is ambiguous",
+						item, collectionSeq));
+			}
+		}
 	}
 	
 	static Map<Character, ParseItem> makeShortHandMap(List<ParseItem> items) {
@@ -170,6 +199,10 @@ class ParseItem {
 	
 	boolean isSeq() {
 		return isSeq;
+	}
+	
+	int getSeqOrder() {
+		return seqOrder;
 	}
 	
 	boolean isMandatory() {

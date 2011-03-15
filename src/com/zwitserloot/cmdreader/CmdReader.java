@@ -73,12 +73,16 @@ public class CmdReader<T> {
 	private final List<ParseItem> items;
 	private final Map<Character, ParseItem> shorthands;
 	private final List<ParseItem> seqList;
+	private final int collectionSeqIndex;
 	
 	private CmdReader(Class<T> settingsDescriptor) {
 		this.settingsDescriptor = settingsDescriptor;
 		this.items = Collections.unmodifiableList(init());
 		this.shorthands = ParseItem.makeShortHandMap(this.items);
 		this.seqList = makeSeqList(this.items);
+		int cSI = -1;
+		for (int i = 0; i < seqList.size(); i++) if (seqList.get(i).isCollection()) cSI = i;
+		this.collectionSeqIndex = cSI;
 	}
 	
 	/**
@@ -113,9 +117,24 @@ public class CmdReader<T> {
 	}
 	
 	private static List<ParseItem> makeSeqList(List<ParseItem> items) {
-		List<ParseItem> list = new ArrayList<ParseItem>();
-		for (ParseItem item : items) if (item.isSeq()) list.add(item);
-		return list;
+		List<ParseItem> seqList = new ArrayList<ParseItem>();
+		int lowest = Integer.MAX_VALUE;
+		for (ParseItem  item : items) if (item.isSeq()) lowest = Math.min(item.getSeqOrder(), lowest);
+		
+		while (true) {
+			int nextLowest = lowest;
+			for (ParseItem item : items) if (item.isSeq() && item.getSeqOrder() >= lowest) {
+				if (item.getSeqOrder() == lowest) seqList.add(item);
+				else if (nextLowest == lowest) nextLowest = item.getSeqOrder();
+				else if (item.getSeqOrder() < nextLowest) nextLowest = item.getSeqOrder();
+			}
+			if (nextLowest == lowest) break;
+			lowest = nextLowest;
+		}
+		
+		ParseItem.multiSeqSanityChecks(seqList);
+		
+		return seqList;
 	}
 	
 	private static final int SCREEN_WIDTH = 72;
@@ -185,7 +204,7 @@ public class CmdReader<T> {
 	private void generateSequentialArgsHelp(StringBuilder out) {
 		List<ParseItem> items = new ArrayList<ParseItem>();
 		
-		for (ParseItem item : this.items) if (item.isSeq() && item.getFullDescription().length() > 0) items.add(item);
+		for (ParseItem item : this.seqList) if (item.getFullDescription().length() > 0) items.add(item);
 		if (items.size() == 0) return;
 		
 		int maxSeqArg = 0;
@@ -254,7 +273,7 @@ public class CmdReader<T> {
 			return;
 		}
 		
-		for (String line : wordbreak(item.getFullDescription(), SCREEN_WIDTH -8)) {
+		for (String line : wordbreak(item.getFullDescription(), SCREEN_WIDTH - 8)) {
 			out.append("\n        ").append(line);
 		}
 		out.append("\n");
@@ -361,8 +380,6 @@ public class CmdReader<T> {
 		
 		if (in == null) in = new String[0];
 		
-		int seq = 0;
-		
 		class State {
 			List<ParseItem> used = new ArrayList<ParseItem>();
 			
@@ -457,6 +474,7 @@ public class CmdReader<T> {
 		}
 		
 		State state = new State();
+		List<String> seqArgs = new ArrayList<String>();
 		
 		for (int i = 0; i < in.length; i++) {
 			if (in[i].startsWith("--")) {
@@ -492,15 +510,45 @@ public class CmdReader<T> {
 					} else state.handle(item, null);
 				}
 			} else {
-				seq++;
-				if (seqList.size() < seq) {
-					if (seqList.size() > 0 && seqList.get(seqList.size()-1).isCollection()) {
-						state.handle(seqList.get(seqList.size()-1), in[i]);
-					} else throw new InvalidCommandLineException(String.format(
-							"invalid command line argument - you've provided too many free-standing arguments: %s", in[i]));
+				seqArgs.add(in[i]);
+			}
+		}
+		
+		if (collectionSeqIndex == -1 && seqArgs.size() > seqList.size()) {
+			throw new InvalidCommandLineException(String.format(
+					"invalid command line argument - you've provided too many free-standing arguments: %s", seqArgs.get(seqList.size())));
+		}
+		
+		if (collectionSeqIndex == -1) {
+			for (int i = 0; i < seqArgs.size(); i++) {
+				ParseItem item = seqList.get(i);
+				state.handle(item, seqArgs.get(i));
+			}
+		} else {
+			int totalCollectionSize = seqArgs.size() - seqList.size() + 1;
+			
+			int argsIdx = 0;
+			int optIdx = 0;
+			int colIdx = 0;
+			while (argsIdx < seqArgs.size()) {
+				if (optIdx < collectionSeqIndex) {
+					ParseItem item = seqList.get(optIdx);
+					state.handle(item, seqArgs.get(argsIdx));
+					optIdx++;
+					argsIdx++;
+				} else if (optIdx == collectionSeqIndex) {
+					ParseItem item = seqList.get(optIdx);
+					while (colIdx < totalCollectionSize) {
+						state.handle(item, seqArgs.get(argsIdx));
+						colIdx++;
+						argsIdx++;
+					}
+					optIdx++;
 				} else {
-					ParseItem item = seqList.get(seq-1);
-					state.handle(item, in[i]);
+					ParseItem item = seqList.get(optIdx);
+					state.handle(item, seqArgs.get(argsIdx));
+					optIdx++;
+					argsIdx++;
 				}
 			}
 		}
