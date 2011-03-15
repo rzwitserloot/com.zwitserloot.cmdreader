@@ -78,14 +78,19 @@ backup or unzip tool can various mutually exclusive modes:
 	@Shorthand("v") @ExcludesGroup("mode") boolean verifyArchive;
 
 #### @Mandatory
-Used to indicate an option is required. Optionally you can include the `unless` parameter to signal that when any of the `unless` options are present, this
-option is no longer mandatory.
+Used to indicate an option is required. Optionally you can include the `onlyIf` or `onlyIfNot` parameter, listing any number of other options, to fine-tune
+when this option is mandatory and when it isn't. `@Mandatory` on a field with a collection type implies at least one such option must be present.
 
 #### @Sequential
 Used to indicate that this option is the 'default' and that no switch is required on the command line for it. For example, if your command line tool works on one
 file, then you can allow your app to be invoked as `java -jar yourapp.jar filename` if you add this annotation:
 
 	@Mandatory @Sequential String fileName;
+
+Multiple sequential arguments are allowed; exactly one such argument may be a collection type, and it does not have to be the last one. Example for a copy program:
+
+	@Mandatory @Sequential(1) List<String> from;
+	@Mandatory @Sequential(2) String to;
 
 #### @Requires
 Used to indicate that if this option is present, the listed option must also be present. Like `@Mandatory` but this one is put on the other option.

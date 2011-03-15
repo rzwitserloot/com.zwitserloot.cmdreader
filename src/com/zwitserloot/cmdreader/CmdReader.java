@@ -40,7 +40,10 @@ import java.util.Map;
  * into something that easier to work with programatically.
  * <p>
  * To use it, first create a 'descriptor' class; this is a class that contains just fields and no code.
- * Each field represents a command line option. Annotate it with the various annotations in the cmdreader package
+ * Each field represents a command line option. The type of each field can be any primitive or primitive wrapper, or String,
+ * or arrays / lists / sets of such types.
+ * 
+ * Annotate each field with the various annotations in the cmdreader package
  * to influence its behaviour. A short description of all annotations (they are all optional):
  * <dl>
  * <dt>FullName
@@ -59,10 +62,11 @@ import java.util.Map;
  * <dt>Mandatory
  * <dd>Indicates that the option must be present. You may optionally specify 'onlyIf' and 'onlyIfNot', which are lists of
  *  names (see FullName). onlyIf means: This is mandatory only if at least one of these options is present. onlyIfNot means:
- *  I am not optional only if one of these options is present, otherwise I am optional.
+ *  I am not optional only if one of these options is present, otherwise I am optional. On fields of a collection type, this means at least
+ *  one such option must be present.
  *  <dt>Sequential
  *  <dd>Use me if there is no option name. In other words, those command line options that do not 'belong' to a -something,
- *  go here. You can have as many as you like, but only one can be a List or array. It is an error if a Sequential
+ *  go here. You can have as many as you like, but only one can be a collection type. It is an error if a Sequential
  *  annotated field is of type boolean. If you have multiple {@code @Sequential} options, you need to specify the ordering.
  *  </dl>
  *  

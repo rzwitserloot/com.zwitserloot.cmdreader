@@ -32,8 +32,8 @@ import java.lang.annotation.Target;
  * For example:
  * 
  * <pre>
- *     &#64;Sequential(1) String from;
- *     &#64;Sequential(2) String to;
+ *     &#64;Mandatory &#64;Sequential(1) List&lt;String&gt; from;
+ *     &#64;Mandatory &#64;Sequential(2) String to;
  * </pre>
  * 
  * could be part of the command line arguments structure for a copy command.
