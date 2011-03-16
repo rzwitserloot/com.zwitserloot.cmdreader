@@ -97,9 +97,9 @@ Used to indicate that if this option is present, the listed option must also be 
 
 ## How to compile / develop
 
-	run:
+run:
 
-		ant
+	ant
 
-	and that's that. All dependencies will be downloaded automatically. The jar file you need will be in the `dist` directory. If you want to work on the code, run 'ant eclipse' or 'ant intellij' to set up the project dir as an eclipse or intellij project.
+and that's that. All dependencies will be downloaded automatically. The jar file you need will be in the `dist` directory. If you want to work on the code, run 'ant eclipse' or 'ant intellij' to set up the project dir as an eclipse or intellij project.
 
