@@ -1,9 +1,6 @@
-bin
 dist
 build
-doc/api
+bin
 lib
-ivyCache
-.settings
-.classpath
-.project
+.*
+target
