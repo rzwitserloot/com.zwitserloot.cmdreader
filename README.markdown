@@ -11,7 +11,7 @@ For the full manual, you should visit the javadoc, which you can build yourself 
 	import com.zwitserloot.cmdreader.*;
 	
 	public class Test {
-		class CmdArgs {
+		static class CmdArgs {
 			@Shorthand("x")
 			@Description("Excludes the given file.")
 			java.util.List<String> exclude;
