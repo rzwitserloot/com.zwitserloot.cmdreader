@@ -82,7 +82,6 @@ public class TestCmdReader {
 		private boolean val4;
 	}
 	
-	@SuppressWarnings("unused")
 	private static class CmdArgs4 {
 		@ExcludesGroup
 		private boolean bar1;
