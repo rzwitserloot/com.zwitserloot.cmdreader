@@ -26,9 +26,9 @@ To use it, first build a class containing fields, with each field representing a
 Then, annotate each field to configure settings (such as whether a parameter can show up more than once, is mandatory, etc),
 and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance of your class, with all fields filled in.
 	</description>
-	<property name="version" value="1.5" />
+	<property name="version" value="1.6" />
 	
-	<property name="build.compiler" value="javac1.6" />
+	<property name="build.compiler" value="javac1.8" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[artifact].[ext]" />
 	<property name="ivyplusplus.location" value="http://projectlombok.org/downloads/ivyplusplus.jar" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
@@ -52,7 +52,7 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	
 	<target name="load-ipp" depends="download-ipp">
 		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
-		<ivy:ensureippversion version="1.5" property="ipp.versionOkay" />
+		<ivy:ensureippversion version="1.42" property="ipp.versionOkay" />
 	</target>
 	
 	<target name="checkver-ipp" depends="load-ipp" unless="ipp.versionOkay">
@@ -105,14 +105,14 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	
 	<target name="compile" depends="ensureBuildDeps" description="Compiles program code">
 		<mkdir dir="build/prog" />
-		<ivy:compile destdir="build/prog" target="1.5" source="1.5">
+		<ivy:compile destdir="build/prog" target="1.8" source="1.8">
 			<src path="src" />
 			<classpath refid="build.path" />
 		</ivy:compile>
 	</target>
 	
 	<target name="compileTests" depends="compile, ensureTestDeps" description="Compiles test code">
-		<ivy:compile destdir="build/tests" source="1.5" target="1.5">
+		<ivy:compile destdir="build/tests" source="1.8" target="1.8">
 			<src path="test" />
 			<classpath refid="test.path" />
 			<classpath>
@@ -123,10 +123,10 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	
 	<target name="dist" depends="compile, -test.quiet, -test, javadoc" description="Creates the distributable">
 		<mkdir dir="dist" />
-		<jar destfile="dist/com.zwitserloot.cmdreader-${version}.jar" basedir="build/prog" />
-		<copy file="dist/com.zwitserloot.cmdreader-${version}.jar" tofile="dist/com.zwitserloot.cmdreader.jar" />
-		<zip destfile="dist/com.zwitserloot.cmdreader-javadoc-${version}.zip" basedir="doc/api" />
-		<zip destfile="dist/com.zwitserloot.cmdreader-src-${version}.zip">
+		<jar destfile="dist/cmdreader-${version}.jar" basedir="build/prog" />
+		<copy file="dist/cmdreader-${version}.jar" tofile="dist/cmdreader.jar" />
+		<zip destfile="dist/cmdreader-javadoc-${version}.zip" basedir="doc/api" />
+		<zip destfile="dist/cmdreader-src-${version}.zip">
 			<zipfileset dir="." prefix="com.zwitserloot.cmdreader/">
 				<include name="LICENSE" />
 				<include name="README.markdown" />
@@ -136,6 +136,57 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 				<include name="test/**" />
 			</zipfileset>
 		</zip>
+	</target>
+	
+	<target name="maven" depends="dist, test, javadoc" description="Build a maven artifact bundle.">
+		<jar destfile="dist/cmdreader-${version}-javadoc.jar">
+			<fileset dir="doc/api" />
+		</jar>
+		<jar destfile="dist/cmdreader-${version}-sources.jar">
+			<fileset dir="src" />
+		</jar>
+		<mkdir dir="build/mavenPublish" />
+		<copy tofile="build/mavenPublish/pom.xml" overwrite="true" file="doc/maven-pom.xml">
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${version}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+		<tar destfile="build/mavenPublish/mavenCmdReaderPublish.tar.bz2" compression="bzip2">
+			<tarfileset dir="dist">
+				<include name="cmdreader-${version}.jar" />
+				<include name="cmdreader-${version}-sources.jar" />
+				<include name="cmdreader-${version}-javadoc.jar" />
+			</tarfileset>
+			<tarfileset dir="build/mavenPublish" includes="pom.xml" />
+		</tar>
+	</target>
+	
+	<target name="-defSSH" depends="ensureBuildDeps">
+		<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
+		<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
+	</target>
+	
+	<target name="maven-publish" depends="maven, -defSSH" description="Build a maven artifact bundle then upload it to projectlombok.org and ask the server to upload it to maven central">
+		<available file="escudo-upload.key" property="escudo.key.available" />
+		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
+		<scp
+			localFile="build/mavenPublish/mavenCmdReaderPublish.tar.bz2"
+			todir="lombokup@projectlombok.org:/staging"
+			keyfile="escudo-upload.key" passphrase=""
+			sftp="false" verbose="true" trust="true" />
+		<sshexec
+			host="projectlombok.org"
+			username="lombokup"
+			keyfile="escudo-upload.key" passphrase=""
+			trust="true" command="./publishCmdReaderToMavenCentral" />
+		<echo>The artifact has been published to staging. Now go to http://oss.sonatype.org/ and log in as Reinier, then doublecheck if all is well and 'release' it.</echo>
+		<sshexec
+			host="projectlombok.org"
+			username="lombokup"
+			keyfile="escudo-upload.key" passphrase=""
+			trust="true" command="./showMavenCentralPassword" />
 	</target>
 	
 	<target name="-test.quiet">
@@ -166,7 +217,7 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 		<mkdir dir="doc/api" />
 		<javadoc sourcepath="src" defaultexcludes="yes" destdir="doc/api" windowtitle="com.zwitserloot.cmdreader">
 			<classpath refid="build.path" />
-			<link href="http://java.sun.com/javase/6/docs/api/" />
+			<link href="http://java.sun.com/javase/8/docs/api/" />
 		</javadoc>
 	</target>
 	
@@ -190,7 +241,7 @@ and finally call CmdReader.of(ThatClass.class).make(cmdargs) to get an instance 
 	</target>
 	
 	<target name="eclipse" depends="deps, contrib" description="Creates eclipse project files and downloads all dependencies. Open this directory as project in eclipse after running this target.">
-		<ivy:eclipsegen>
+		<ivy:eclipsegen source="1.8">
 			<srcdir dir="src" />
 			<srcdir dir="test" />
 			<conf name="build" sources="contrib" />

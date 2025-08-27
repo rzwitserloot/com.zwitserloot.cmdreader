@@ -44,9 +44,8 @@ For the full manual, you should visit the javadoc, which you can build yourself 
 Describes this option. This description is used by `CmdReader.generateCommandLineHelp` to generate the command line help message, and nowhere else.
 
 #### @FullName
-By default an option's full name is equal to its field name. If you want to override this, for example because you'd like your option to include a dash
-which is not a legal java identifier character, you can do so here. Any option can be accessed using the "--fullname(=value)" syntax, and full names are also used
-to refer to other options.
+By default an option's full name is equal to its field name, with `camelCase` reinterpreted as `camel-case` If you want to override this, for example because you'd like your option to include camelcasing,
+you can do so here. Any option can be accessed using the "--fullname(=value)" syntax, and full names are also used to refer to other options.
 
 #### @Shorthand
 A shorthand is a single character which can be used as a short alternative. For example:
@@ -71,7 +70,7 @@ Multiple options can be listed in one `@Excludes`.
 #### @ExcludesGroup
 List any number of unique group names as parameter to the `@ExcludesGroup` method. Any command line that lists more than one option that both share
 an excludes group is treated as an invalid command line. This is useful if you have a number of 'modes' which are all mutually exclusive. For example, a
-backup or unzip tool can various mutually exclusive modes:
+backup or unzip tool can have various mutually exclusive modes:
 
 	@Shorthand("c") @ExcludesGroup("mode") boolean createArchive;
 	@Shorthand("x") @ExcludesGroup("mode") boolean extractArchive;
@@ -101,5 +100,5 @@ run:
 
 	ant
 
-and that's that. All dependencies will be downloaded automatically. The jar file you need will be in the `dist` directory. If you want to work on the code, run 'ant eclipse' or 'ant intellij' to set up the project dir as an eclipse or intellij project.
+and that's that. All dependencies will be downloaded automatically. The jar file you need will be in the `dist` directory. If you want to work on the code, run 'ant eclipse' to set up the project dir as an eclipse or intellij project.
 

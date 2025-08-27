@@ -107,7 +107,7 @@ public class CmdReader<T> {
 		List<ParseItem> out = new ArrayList<ParseItem>();
 		
 		while (c != Object.class) {
-			Field[] fields = settingsDescriptor.getDeclaredFields();
+			Field[] fields = c.getDeclaredFields();
 			for (Field field : fields) {
 				field.setAccessible(true);
 				if (Modifier.isStatic(field.getModifiers())) continue;
@@ -583,7 +583,7 @@ public class CmdReader<T> {
 	
 	/**
 	 * Turns a list of strings, such as "Hello", "World!" into a single string, each element separated by a space.
-	 * Use it if you want to grab the rest of the command line as a single string, spaces and all; include a @Sequential
+	 * Use it if you want to grab the rest of the command line as a single string, spaces and all; include a {@code @Sequential}
 	 * List of Strings and run squash on it to do this.
 	 */
 	public static String squash(Collection<String> collection) {

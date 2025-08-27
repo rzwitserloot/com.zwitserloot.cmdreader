@@ -167,6 +167,15 @@ public class TestCmdReader {
 		readerSeq2 = CmdReader.of(CmdArgsSeq2.class);
 	}
 	
+	@Test
+	public void testSetupFullName() {
+		assertEquals("camel-case", ParseItem.fieldNameToOptName("camelCase"));
+		assertEquals("PIN", ParseItem.fieldNameToOptName("PIN"));
+		assertEquals("Camel-case", ParseItem.fieldNameToOptName("CamelCase"));
+		assertEquals("Camel0-case", ParseItem.fieldNameToOptName("Camel0Case"));
+		assertEquals("DVDPlayer-name", ParseItem.fieldNameToOptName("DVDPlayerName"));
+	}
+	
 	@Test(expected=InvalidCommandLineException.class)
 	public void testMandatory1() throws InvalidCommandLineException {
 		reader1.make(new String[0]);

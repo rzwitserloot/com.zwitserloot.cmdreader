@@ -116,10 +116,10 @@ class ParseItem {
 	}
 	
 	private void sanityChecks() {
-		if (!isParameterized && Boolean.class != type) throw new IllegalArgumentException("Non-parameterized parameters must have type boolean. - it's there (true), or not (false).");
-		if (!isParameterized && isMandatory) throw new IllegalArgumentException("Non-parameterized parameters must not be mandatory - what's the point of having it?");
-		if (isSeq && !"".equals(shorthand)) throw new IllegalArgumentException("sequential parameters must not have any shorthands.");
-		if (isSeq && !isParameterized) throw new IllegalArgumentException("sequential parameters must always be parameterized.");
+		if (!isParameterized && Boolean.class != type) throw new IllegalArgumentException("Non-parameterized options must have type boolean. - it's there (true), or not (false).");
+		if (!isParameterized && isMandatory) throw new IllegalArgumentException("Non-parameterized options must not be mandatory - what's the point of having it?");
+		if (isSeq && !"".equals(shorthand)) throw new IllegalArgumentException("sequential options must not have any shorthands.");
+		if (isSeq && !isParameterized) throw new IllegalArgumentException("sequential options must always be parameterized.");
 	}
 	
 	static void multiSanityChecks(List<ParseItem> items) {
@@ -287,11 +287,27 @@ class ParseItem {
 	
 	private String setupFullName(Field field) {
 		FullName ann = field.getAnnotation(FullName.class);
-		if (ann == null) return field.getName();
-		else {
-			if (ann.value().trim().equals("")) throw new IllegalArgumentException("Missing name for field: " + field.getName());
-			else return ann.value();
+		if (ann == null) return fieldNameToOptName(field.getName());
+		if (ann.value().trim().equals("")) throw new IllegalArgumentException("Missing name for field: " + field.getName());
+		return ann.value();
+	}
+	
+	static String fieldNameToOptName(String fieldName) {
+		// Scan for camel casing, replacing with dashed name.
+		int state = 2; // 1 = lastWasCapital, 2 = lastWasNotCapital
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < fieldName.length(); i++) {
+			char c = fieldName.charAt(i);
+			if (Character.isUpperCase(c)) {
+				if (i > 0 && state == 2) sb.append("-").append(Character.toLowerCase(c));
+				else sb.append(c);
+				state = 1;
+			} else {
+				sb.append(c);
+				state = 2;
+			}
 		}
+		return sb.toString();
 	}
 	
 	private String setupShorthand(Field field) {
